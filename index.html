@@ -9874,7 +9874,6 @@ const rawScriptureData = [
         // State management
         let currentUser = null;
         let readScriptures = new Set();
-        let longPressTimer = null;
 
         // Initialize app
         function initApp() {
@@ -9922,14 +9921,14 @@ const rawScriptureData = [
                             <span class="guide-icon">🔗</span>
                             <div class="guide-text">
                                 <strong>Read on Church Website:</strong><br>
-                                Long press (or long click on desktop) any scripture to open it on the Church's website.
+                                Double tap/click any scripture to open it on the Church's website.
                             </div>
                         </div>
                         <div class="guide-item">
                             <span class="guide-icon">🔄</span>
                             <div class="guide-text">
                                 <strong>Start Fresh:</strong><br>
-                                Use the red "Restart Challenge" button at the bottom to reset your progress anytime.
+                                Restart button is at the bottom.
                             </div>
                         </div>
                     </div>
@@ -10112,7 +10111,6 @@ const rawScriptureData = [
             localStorage.setItem(storageKey, JSON.stringify(Array.from(readScriptures)));
         }
 
-        // Render all scripture books
         function renderScriptures() {
             const container = document.getElementById('scriptureBooks');
             container.innerHTML = '';
@@ -10175,45 +10173,30 @@ const rawScriptureData = [
                 <div class="scripture-text">${scripture.text}</div>
             `;
             
-            // Handle click to mark as read (no login required)
+            // Track clicks for double-click/double-tap detection
+            let lastClickTime = 0;
+            const doubleClickDelay = 300; // milliseconds
+            
+            // Handle click events (single click marks as read, double click opens website)
             card.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                toggleScriptureRead(scripture.id);
-            });
-            
-            // Handle long press to open on church website
-            let pressTimer;
-            const startPress = (e) => {
-                e.preventDefault();
-                pressTimer = setTimeout(() => {
+                
+                const currentTime = new Date().getTime();
+                const timeDiff = currentTime - lastClickTime;
+                
+                if (timeDiff < doubleClickDelay && timeDiff > 0) {
+                    // Double click detected
                     openScriptureOnWebsite(scripture, bookSection);
-                }, 500);
-            };
-            
-            const cancelPress = () => {
-                clearTimeout(pressTimer);
-            };
-            
-            // Mouse events
-            card.addEventListener('mousedown', startPress);
-            card.addEventListener('mouseup', cancelPress);
-            card.addEventListener('mouseleave', cancelPress);
-            
-            // Touch events for mobile
-            card.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                pressTimer = setTimeout(() => {
-                    openScriptureOnWebsite(scripture, bookSection);
-                }, 500);
-            });
-            
-            card.addEventListener('touchend', (e) => {
-                e.preventDefault();
-                clearTimeout(pressTimer);
-                // If it was a quick tap, toggle read status
-                if (pressTimer) {
-                    toggleScriptureRead(scripture.id);
+                    lastClickTime = 0; // Reset to prevent triple-click issues
+                } else {
+                    // Single click - mark as read
+                    lastClickTime = currentTime;
+                    setTimeout(() => {
+                        if (lastClickTime === currentTime) {
+                            toggleScriptureRead(scripture.id);
+                        }
+                    }, doubleClickDelay);
                 }
             });
             
@@ -10295,10 +10278,10 @@ const rawScriptureData = [
             // Clean the book name - remove periods and handle spaces
             const book = scripture.book.replace(/\.$/, ''); // Remove trailing period
             const urlBook = scriptureUrlMap[book] || scriptureUrlMap[scripture.book] || 
-                           book.toLowerCase()
-                               .replace(/\./g, '') // Remove all periods
-                               .replace(/\s+/g, '-') // Replace spaces with dashes
-                               .replace(/—/g, '-'); // Replace em dashes with regular dashes
+                            book.toLowerCase()
+                                .replace(/\./g, '') // Remove all periods
+                                .replace(/\s+/g, '-') // Replace spaces with dashes
+                                .replace(/—/g, '-'); // Replace em dashes with regular dashes
             
             const chapter = scripture.chapter;
             const verse = scripture.verse.split('–')[0]; // Get first verse if it's a range
