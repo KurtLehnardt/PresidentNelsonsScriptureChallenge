@@ -24,7 +24,7 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            font-family: "Ensign:Sans", Arial, "noto sans", sans-serif;
             background: linear-gradient(135deg, var(--theme-page-header-nav-bg) 0%, var(--theme-page-header-nav-bg2) 100%);
             min-height: 100vh;
             padding: 20px;
@@ -36,7 +36,7 @@
         }
 
         .header {
-            background: white;
+            background: var(--theme-page-header-nav-bg2);
             border-radius: 20px;
             padding: 30px;
             margin-bottom: 30px;
@@ -61,7 +61,7 @@
         }
 
         .header h1 {
-            color: var(--theme-page-header-nav-bg2);
+            color: white;
             font-size: 28px;
             font-weight: 700;
             display: flex;
@@ -607,7 +607,7 @@
         <div id="scriptureBooks"></div>
         
         <div class="restart-section">
-            <p class="restart-description">Need a fresh start? Reset your progress and begin the challenge again.</p>
+            <p class="restart-description">Reset your progress and start the challenge again.</p>
             <button class="restart-btn" onclick="confirmRestart()">
                 <span>🔄</span>
                 <span>Restart Challenge</span>
@@ -9903,7 +9903,7 @@ const rawScriptureData = [
                 title: 'Welcome to President Nelson\'s Scripture Challenge! 📖',
                 html: `
                     <div class="guide-list">
-                        <div class="guide-item">
+                        <div class="guide-item" style="display: none;">
                             <span class="guide-icon">💾</span>
                             <div class="guide-text">
                                 <strong>Save Your Progress:</strong><br>
@@ -9921,7 +9921,7 @@ const rawScriptureData = [
                             <span class="guide-icon">🔗</span>
                             <div class="guide-text">
                                 <strong>Read on Church Website:</strong><br>
-                                Double tap/click any scripture to open it on the Church's website.
+                                Double tap/click any scripture to open it in the Gospel Library or on the Church's website.
                             </div>
                         </div>
                         <div class="guide-item">
@@ -10207,10 +10207,10 @@ const rawScriptureData = [
         function toggleScriptureRead(scriptureId) {
             if (readScriptures.has(scriptureId)) {
                 readScriptures.delete(scriptureId);
-                showToast("Scripture marked as unread");
+                // showToast("Scripture marked as unread");
             } else {
                 readScriptures.add(scriptureId);
-                showToast("Scripture marked as read! 🎉");
+                // showToast("Scripture marked as read! 🎉");
             }
             
             // Save immediately after toggle
@@ -10350,7 +10350,7 @@ const rawScriptureData = [
             
             setTimeout(() => {
                 toast.classList.remove('show');
-            }, 3000);
+            }, 2000);
         }
 
         // Initialize the app on load
