@@ -562,13 +562,27 @@
     <div class="container">
         <div class="header">
             <div class="header-left">
-                <div class="header-title">
-                    <h1>
-                        <img src="https://www.churchofjesuschrist.org/imgs/c730fd12d24c640f7649912008ddf828afd93403/full/60%2C/0/default.png" 
-                             alt="Logo" 
-                             class="logo"
-                             onerror="this.style.display='none'">
+                <div class="header-title" style="display: flex; justify-content: center; align-items: center;">
+                    <h1 style="
+                        display: flex; 
+                        align-items: center; 
+                        white-space: nowrap;
+                        /* CRITICAL: Adds uniform spacing between the text and images */
+                        gap: 15px; 
+                    ">
+                        <img src="https://www.churchofjesuschrist.org/imgs/c730fd12d24c640f7649912008ddf828afd93403/full/60%2C/0/default.png" alt="Logo" class="logo" onerror="this.style.display='none'" style="
+                            /* CRITICAL: Force the small logo to occupy a larger, defined space */
+                            width: 80px; 
+                            height: auto;
+                        ">
                         President Nelson's Scripture Challenge
+                        <img src="https://www.churchofjesuschrist.org/imgs/dd82949cce59918d88ed1cfa9e7c0fc38f7009b3/full/%21200%2C/0/default" alt="portrait" class="portrait" onerror="this.style.display='none'" style="
+                            border-radius: 50%;
+                            scale: 120%;
+                            /* CRITICAL: Force the portrait to occupy the same space as the logo */
+                            width: 80px;
+                            height: auto;
+                        ">
                     </h1>
                 </div>
                     <a href="https://www.churchofjesuschrist.org/study/new-era/2018/01/study-the-saviors-words?lang=eng" target="_blank" class="learn-more">
