@@ -52,12 +52,14 @@
             display: flex;
             flex-direction: column;
             gap: 10px;
+            width: 100%;
         }
 
         .header-title {
             display: flex;
             align-items: center;
             gap: 15px;
+            justify-content: center;
         }
 
         .header h1 {
@@ -84,6 +86,7 @@
             padding: 5px 10px;
             border-radius: 5px;
             transition: background 0.2s;
+            justify-content: center;
         }
 
         .learn-more:hover {
@@ -568,11 +571,14 @@
                         President Nelson's Scripture Challenge
                     </h1>
                 </div>
-                <a href="https://www.churchofjesuschrist.org/study/new-era/2018/01/study-the-saviors-words?lang=eng" 
-                   target="_blank" 
-                   class="learn-more">
-                    📖 Learn about the challenge
-                </a>
+                    <a href="https://www.churchofjesuschrist.org/study/new-era/2018/01/study-the-saviors-words?lang=eng" target="_blank" class="learn-more">
+                        Learn about the challenge
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="height: 1em; width: 1em; margin-left: 0.25em; vertical-align: middle;">
+                            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                            <polyline points="15 3 21 3 21 9"></polyline>
+                            <line x1="10" y1="14" x2="21" y2="3"></line>
+                        </svg>
+                    </a>
             </div>
             <div class="user-info" id="userInfo" style="display: none;">
                 <button class="login-btn" onclick="showAuthModal()">Sign In</button>
@@ -607,7 +613,7 @@
         <div id="scriptureBooks"></div>
         
         <div class="restart-section">
-            <p class="restart-description">Reset your progress and start the challenge again.</p>
+            <p class="restart-description">Start the challenge again.</p>
             <button class="restart-btn" onclick="confirmRestart()">
                 <span>🔄</span>
                 <span>Restart Challenge</span>
@@ -9914,7 +9920,7 @@ const rawScriptureData = [
                             <span class="guide-icon">✅</span>
                             <div class="guide-text">
                                 <strong>Track Your Reading:</strong><br>
-                                Tap any scripture to mark it as read. It will turn green with a checkmark.
+                                Tap any scripture to mark it as read.
                             </div>
                         </div>
                         <div class="guide-item">
