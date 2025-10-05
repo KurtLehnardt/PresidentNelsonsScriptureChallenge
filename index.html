@@ -782,6 +782,7 @@
         }
 
         // Update statistics
+// Update statistics
         function updateStats() {
             const totalScriptures = Object.values(scriptureData).flat().length;
             const readCount = readScriptures.size;
@@ -790,8 +791,8 @@
             document.getElementById('totalRead').textContent = readCount;
             document.getElementById('totalScriptures').textContent = totalScriptures;
             document.getElementById('percentComplete').textContent = percentage + '%';
-            document.getElementById('progressFill').style.width = percentage + '%';
-            document.getElementById('progressFill').textContent = percentage + '%';
+            
+            // The two lines attempting to update the old progress bar have been removed.
 
             // Minimal Progress Bar Update (for collapsed state)
             document.getElementById('progressFillMinimal').style.width = percentage + '%';
