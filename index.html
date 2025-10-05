@@ -6,6 +6,7 @@
     <title>President Nelson's Scripture Challenge</title>
     
     <link rel="stylesheet" href="./styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLMDJ8K48B+n9A7E8S9wM6J7P7gR4N6V+1p6k4/f7+E6j8L45E45G45G54F45H45E45G45G54F45H" crossorigin="anonymous" referrerpolicy="no-referrer" />
     
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -59,12 +60,14 @@
                 <div class="progress-bar-minimal">
                     <div class="progress-fill" id="progressFillMinimal">0%</div>
                 </div>
-                <span class="expand-icon" id="statsExpandIcon">▶</span>
+                <span class="expand-icon" id="statsExpandIcon">
+                    <i class="fas fa-chevron-down"></i>
+                </span>
             </div>
             <div class="stats-content" id="statsContent">
-                <div class="progress-bar">
+                <!-- <div class="progress-bar"> removing this progress bar when the div is expanded
                     <div class="progress-fill" id="progressFill">0%</div>
-                </div>
+                </div> -->
                 <div class="stats-grid">
                     <div class="stat-item">
                         <div class="stat-number" id="totalRead">0</div>
@@ -86,7 +89,7 @@
             </div>
         </div>
         
-        <!-- <div class="stats">
+        <!-- <div class="stats"> old stats section without minimizing/max functionality
             <h2>Your Progress</h2>
             <div class="progress-bar">
                 <div class="progress-fill" id="progressFill">0%</div>
@@ -516,7 +519,7 @@
                         ${readCount} / ${scriptures.length} read (${percentage}%)
                     </div>
                 </div>
-                <span class="expand-icon">▼</span>
+                <span class="expand-icon"><i class="fas fa-chevron-right"></i></span>
             `;
             
             const scripturesContainer = document.createElement('div');
