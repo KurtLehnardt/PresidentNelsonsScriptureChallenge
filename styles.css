@@ -230,10 +230,11 @@ body {
 
 .stats {
     background: white;
-    border-radius: 20px;
-    padding: 25px;
-    margin-bottom: 30px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease-out;
 }
 
 .stats-grid {
@@ -569,4 +570,116 @@ body {
         align-items: center;
         gap: 15px !important;
     }
+}
+
+/* ======================================= */
+/* PROGRESS BAR FIXES                      */
+/* ======================================= */
+.progress-bar-minimal {
+    height: 30px; /* Smaller height for minimal bar */
+    margin-bottom: 0;
+    width: 100%;
+    background-color: #3b3b3b;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    height: 40px; /* Consistent height */
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-item {
+    text-align: center;
+    padding: 15px;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    border-radius: 15px;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--theme-page-header-nav-bg) 0%, var(--theme-page-header-nav-bg2) 100%);
+    transition: width 0.5s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 14px;
+    /* potential fix for digits off scale */
+    /* justify-content: flex-end; /* Align 100% to the right */
+    /* white-space: nowrap; */
+    /* padding: 0 10px; /* Key fix for 0% and 100% text margin */
+    /* font-weight: bold; */
+    /* font-size: 18px; */
+    /* color: white; */
+    /* box-sizing: border-box; */
+    /* min-width: 40px; /* Ensures space for "0%" or "100%" text */
+}
+
+/* Specific styles for the minimal bar fill */
+#progressFillMinimal {
+    font-size: 16px;
+    min-width: 35px;
+}
+
+/* ======================================= */
+/* COLLAPSIBLE STATS SECTION & CHEVRON COLOR */
+/* ======================================= */
+.stats-header {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    padding: 5px 0;
+}
+
+.stats-header h2 {
+    margin: 0;
+    flex-grow: 1;
+}
+
+/* Chevron Color Change (Blue for White Background) */
+.book-section .expand-icon,
+.stats-header .expand-icon {
+    font-size: 1.5em;
+    margin-left: 10px;
+    transition: transform 0.3s ease;
+    color: var(--theme-page-header-nav-bg2);
+}
+
+/* Minimal progress bar (ONLY VISIBLE WHEN COLLAPSED) */
+.progress-bar-minimal {
+    margin: 0 20px;
+    flex-basis: 300px;
+    display: none; /* Hidden by default (expanded state) */
+}
+
+/* Show minimal progress bar in collapsed state */
+.stats.collapsed .progress-bar-minimal {
+    display: block; 
+}
+
+/* Full stats content wrapper */
+.stats-content {
+    max-height: 500px; /* Large enough for expanded state */
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+}
+
+/* Collapse state: content hidden, icon points right */
+.stats.collapsed .stats-content {
+    max-height: 0 !important; /* CRITICAL: Hides the content smoothly */
+}
+
+/* Explicitly hide the FULL progress bar when collapsed */
+.stats.collapsed .progress-bar {
+    display: none; 
+}
+
+/* Expanded state: icon points down */
+.stats:not(.collapsed) .expand-icon {
+    transform: rotate(90deg);
+}
+
+/* Collapse state: icon points right */
+.stats.collapsed .expand-icon {
+    transform: rotate(0deg); 
 }
