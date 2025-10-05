@@ -254,6 +254,12 @@
             loadUserData();
             renderScriptures();
             updateStats();
+
+            const statsContent = document.getElementById('statsContent');
+            if (statsContent) {
+                // Must be done after all content is rendered to get correct scrollHeight
+                statsContent.style.maxHeight = statsContent.scrollHeight + 'px';
+            }
             
             // Close modal on click outside
             window.onclick = function(event) {
@@ -527,23 +533,60 @@
             return section;
         }
 
+        // 🔽 NEW/UPDATED: Toggle book expansion and minimize all others
+        function toggleBook(section) {
+            const isExpanding = !section.classList.contains('expanded');
+        
+            // 1. Collapse ALL sections first
+            document.querySelectorAll('.book-section').forEach(s => {
+                s.classList.remove('expanded');
+                s.querySelector('.scriptures-container').style.maxHeight = '0';
+            });
+        
+            // 2. Collapse the Stats section
+            const statsSection = document.getElementById('statsSection');
+            const statsContent = document.getElementById('statsContent');
+            const statsIcon = document.getElementById('statsExpandIcon');
+            
+            if (!statsSection.classList.contains('collapsed')) {
+                statsSection.classList.add('collapsed');
+                statsContent.style.maxHeight = '0';
+                statsIcon.textContent = '▶';
+            }
+        
+            // 3. If a book was clicked, expand it (after everything else is collapsed)
+            if (isExpanding) {
+                section.classList.add('expanded');
+                const container = section.querySelector('.scriptures-container');
+                // Set max-height for smooth transition
+                container.style.maxHeight = container.scrollHeight + 'px'; 
+            }
+        }
+
+        // 🔽 UPDATED: Toggle stats function (must now keep track of max-height)
         function toggleStats() {
             const statsSection = document.getElementById('statsSection');
             const content = document.getElementById('statsContent');
             const icon = document.getElementById('statsExpandIcon');
             
-            const isCollapsed = statsSection.classList.toggle('collapsed');
-
-            // Apply height for CSS transition
-            if (isCollapsed) {
-                // If collapsing, set max-height to 0
-                content.style.maxHeight = '0';
-                icon.textContent = '▶';
-            } else {
-                // If expanding, set max-height to content's scroll height
+            // If stats is currently collapsed and we are expanding it
+            if (statsSection.classList.contains('collapsed')) {
+                // Expand the stats section
+                statsSection.classList.remove('collapsed');
                 content.style.maxHeight = content.scrollHeight + 'px';
                 icon.textContent = '▼';
+            } else {
+                // If stats is currently expanded and we are collapsing it
+                statsSection.classList.add('collapsed');
+                content.style.maxHeight = '0';
+                icon.textContent = '▶';
             }
+            
+            // 4. Collapse ALL book sections when stats is toggled (optional, but good practice)
+            document.querySelectorAll('.book-section.expanded').forEach(s => {
+                s.classList.remove('expanded');
+                s.querySelector('.scriptures-container').style.maxHeight = '0';
+            });
         }
         
         // Create a scripture card
@@ -690,9 +733,34 @@
             showToast("Opening scripture on Church website...");
         }
 
-        // Toggle book expansion
+        // NEW/UPDATED: Toggle book expansion and minimize all others
         function toggleBook(section) {
-            section.classList.toggle('expanded');
+            const isExpanding = !section.classList.contains('expanded');
+        
+            // 1. Collapse ALL sections first
+            document.querySelectorAll('.book-section').forEach(s => {
+                s.classList.remove('expanded');
+                s.querySelector('.scriptures-container').style.maxHeight = '0';
+            });
+        
+            // 2. Collapse the Stats section
+            const statsSection = document.getElementById('statsSection');
+            const statsContent = document.getElementById('statsContent');
+            const statsIcon = document.getElementById('statsExpandIcon');
+            
+            if (!statsSection.classList.contains('collapsed')) {
+                statsSection.classList.add('collapsed');
+                statsContent.style.maxHeight = '0';
+                statsIcon.textContent = '▶';
+            }
+        
+            // 3. If a book was clicked, expand it (after everything else is collapsed)
+            if (isExpanding) {
+                section.classList.add('expanded');
+                const container = section.querySelector('.scriptures-container');
+                // Set max-height for smooth transition
+                container.style.maxHeight = container.scrollHeight + 'px'; 
+            }
         }
 
         // Update statistics
