@@ -53,7 +53,40 @@
             </div>
         </div>
 
-        <div class="stats">
+        <div class="stats collapsed" id="statsSection">
+            <div class="stats-header" onclick="toggleStats()">
+                <h2>Your Progress</h2>
+                <div class="progress-bar-minimal">
+                    <div class="progress-fill" id="progressFillMinimal">0%</div>
+                </div>
+                <span class="expand-icon" id="statsExpandIcon">▶</span>
+            </div>
+            <div class="stats-content" id="statsContent">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill">0%</div>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-number" id="totalRead">0</div>
+                        <div class="stat-label">Scriptures Read</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="totalScriptures">0</div>
+                        <div class="stat-label">Total Scriptures</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="streakDays">0</div>
+                        <div class="stat-label">Day Streak</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="percentComplete">0%</div>
+                        <div class="stat-label">Complete</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- <div class="stats">
             <h2>Your Progress</h2>
             <div class="progress-bar">
                 <div class="progress-fill" id="progressFill">0%</div>
@@ -76,7 +109,7 @@
                     <div class="stat-label">Complete</div>
                 </div>
             </div>
-        </div>
+        </div> -->
 
         <div id="scriptureBooks"></div>
         
@@ -494,6 +527,25 @@
             return section;
         }
 
+        function toggleStats() {
+            const statsSection = document.getElementById('statsSection');
+            const content = document.getElementById('statsContent');
+            const icon = document.getElementById('statsExpandIcon');
+            
+            const isCollapsed = statsSection.classList.toggle('collapsed');
+
+            // Apply height for CSS transition
+            if (isCollapsed) {
+                // If collapsing, set max-height to 0
+                content.style.maxHeight = '0';
+                icon.textContent = '▶';
+            } else {
+                // If expanding, set max-height to content's scroll height
+                content.style.maxHeight = content.scrollHeight + 'px';
+                icon.textContent = '▼';
+            }
+        }
+        
         // Create a scripture card
         function createScriptureCard(scripture, bookSection) {
             const card = document.createElement('div');
@@ -654,6 +706,10 @@
             document.getElementById('percentComplete').textContent = percentage + '%';
             document.getElementById('progressFill').style.width = percentage + '%';
             document.getElementById('progressFill').textContent = percentage + '%';
+
+            // Minimal Progress Bar Update (for collapsed state)
+            document.getElementById('progressFillMinimal').style.width = percentage + '%';
+            document.getElementById('progressFillMinimal').textContent = percentage + '%';
             
             // Calculate streak (mock implementation)
             const storageKey = currentUser ? `lastRead_${currentUser.id}` : 'lastRead_anonymous';
@@ -668,6 +724,13 @@
             } else if (readCount > 0) {
                 streak = 1;
                 localStorage.setItem(storageKey, today);
+            }
+
+            // Re-apply max-height after content update if it is expanded
+            const statsSection = document.getElementById('statsSection');
+            const content = document.getElementById('statsContent');
+            if (!statsSection.classList.contains('collapsed')) {
+                content.style.maxHeight = content.scrollHeight + 'px';
             }
             
             localStorage.setItem(streakKey, streak.toString());
