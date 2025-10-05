@@ -322,10 +322,6 @@ body {
     transition: transform 0.3s;
 }
 
-.book-section.expanded .expand-icon {
-    transform: rotate(180deg);
-}
-
 .scriptures-container {
     max-height: 0;
     overflow: hidden;
@@ -639,11 +635,10 @@ body {
 /* Chevron Color Change (Blue for White Background) */
 .book-section .expand-icon,
 .stats-header .expand-icon {
-    font-size: 1.5em;
+    font-size: 1.2em;
     margin-left: 10px;
-    transition: transform 0.3s ease;
     color: var(--theme-page-header-nav-bg2);
-    transform: rotate(0deg); 
+    transition: none;
 }
 
 /* Minimal progress bar (ONLY VISIBLE WHEN COLLAPSED) */
@@ -673,17 +668,6 @@ body {
 /* Explicitly hide the FULL progress bar when collapsed */
 .stats.collapsed .progress-bar {
     display: none; 
-}
-
-/* Expanded state: icon points down */
-.stats:not(.collapsed) .expand-icon,
-.book-section.expanded .expand-icon {
-    transform: rotate(90deg);
-}
-
-/* Collapse state: icon points right */
-.stats.collapsed .expand-icon {
-    transform: rotate(0deg); 
 }
 
 /* Book Sections Container (for collapsing logic) */
