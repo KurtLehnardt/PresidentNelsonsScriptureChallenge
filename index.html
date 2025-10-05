@@ -567,25 +567,31 @@
         function toggleStats() {
             const statsSection = document.getElementById('statsSection');
             const content = document.getElementById('statsContent');
-            const icon = document.getElementById('statsExpandIcon');
+            const iconSpan = document.getElementById('statsExpandIcon');
+            const icon = iconSpan.querySelector('i'); // Target the <i> element
             
             // If stats is currently collapsed and we are expanding it
             if (statsSection.classList.contains('collapsed')) {
-                // Expand the stats section
+                // Expand
                 statsSection.classList.remove('collapsed');
                 content.style.maxHeight = content.scrollHeight + 'px';
-                icon.textContent = '▼';
+                icon.classList.remove('fa-chevron-right'); // Collapsed icon
+                icon.classList.add('fa-chevron-down'); // Expanded icon
             } else {
-                // If stats is currently expanded and we are collapsing it
+                // Collapse
                 statsSection.classList.add('collapsed');
                 content.style.maxHeight = '0';
-                icon.textContent = '▶';
+                icon.classList.remove('fa-chevron-down'); // Expanded icon
+                icon.classList.add('fa-chevron-right'); // Collapsed icon
             }
             
-            // 4. Collapse ALL book sections when stats is toggled (optional, but good practice)
+            // Collapse ALL book sections when stats is toggled 
             document.querySelectorAll('.book-section.expanded').forEach(s => {
                 s.classList.remove('expanded');
                 s.querySelector('.scriptures-container').style.maxHeight = '0';
+                // Collapse book icon
+                s.querySelector('.expand-icon i').classList.remove('fa-chevron-down');
+                s.querySelector('.expand-icon i').classList.add('fa-chevron-right');
             });
         }
         
@@ -733,33 +739,41 @@
             showToast("Opening scripture on Church website...");
         }
 
-        // NEW/UPDATED: Toggle book expansion and minimize all others
+        // 🔽 UPDATED: Toggle book function to swap Font Awesome icons
         function toggleBook(section) {
+            const icon = section.querySelector('.expand-icon i'); // Target the <i> element
             const isExpanding = !section.classList.contains('expanded');
         
-            // 1. Collapse ALL sections first
+            // 1. Collapse ALL sections (books and stats)
             document.querySelectorAll('.book-section').forEach(s => {
                 s.classList.remove('expanded');
                 s.querySelector('.scriptures-container').style.maxHeight = '0';
+                // Reset ALL book icons to right
+                s.querySelector('.expand-icon i').classList.remove('fa-chevron-down');
+                s.querySelector('.expand-icon i').classList.add('fa-chevron-right');
             });
         
             // 2. Collapse the Stats section
             const statsSection = document.getElementById('statsSection');
             const statsContent = document.getElementById('statsContent');
-            const statsIcon = document.getElementById('statsExpandIcon');
+            const statsIcon = document.getElementById('statsExpandIcon').querySelector('i');
             
             if (!statsSection.classList.contains('collapsed')) {
                 statsSection.classList.add('collapsed');
                 statsContent.style.maxHeight = '0';
-                statsIcon.textContent = '▶';
+                // Collapse stats icon
+                statsIcon.classList.remove('fa-chevron-down'); 
+                statsIcon.classList.add('fa-chevron-right');
             }
         
-            // 3. If a book was clicked, expand it (after everything else is collapsed)
+            // 3. If a book was originally clicked, expand it 
             if (isExpanding) {
                 section.classList.add('expanded');
                 const container = section.querySelector('.scriptures-container');
-                // Set max-height for smooth transition
                 container.style.maxHeight = container.scrollHeight + 'px'; 
+                // Set THIS book icon to down
+                icon.classList.remove('fa-chevron-right'); 
+                icon.classList.add('fa-chevron-down'); 
             }
         }
 
