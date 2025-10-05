@@ -680,3 +680,8 @@ body {
 .book-section:not(.expanded) .scriptures-container {
     max-height: 0 !important;
 }
+
+.book-section .expand-icon,
+.book-header .expand-icon {
+    color: white; /* Make the book section chevrons white */
+}
