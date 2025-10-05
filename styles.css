@@ -643,6 +643,7 @@ body {
     margin-left: 10px;
     transition: transform 0.3s ease;
     color: var(--theme-page-header-nav-bg2);
+    transform: rotate(0deg); 
 }
 
 /* Minimal progress bar (ONLY VISIBLE WHEN COLLAPSED) */
@@ -675,11 +676,23 @@ body {
 }
 
 /* Expanded state: icon points down */
-.stats:not(.collapsed) .expand-icon {
+.stats:not(.collapsed) .expand-icon,
+.book-section.expanded .expand-icon {
     transform: rotate(90deg);
 }
 
 /* Collapse state: icon points right */
 .stats.collapsed .expand-icon {
     transform: rotate(0deg); 
+}
+
+/* Book Sections Container (for collapsing logic) */
+.scriptures-container {
+    max-height: 100000vh; /* Large initial max-height for expanded state */
+    overflow: hidden;
+    transition: max-height 0.4s ease-out;
+}
+
+.book-section:not(.expanded) .scriptures-container {
+    max-height: 0 !important;
 }
