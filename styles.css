@@ -498,7 +498,7 @@ body {
 
 .guide-icon {
     font-size: 24px;
-    flex-shrink: 0;
+    flex-grow: 1;
 }
 
 .guide-text {
