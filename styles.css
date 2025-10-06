@@ -629,7 +629,7 @@ body {
 
 .stats-header h2 {
     margin: 0;
-    flex-grow: 1;
+    flex-shrink: 1;
 }
 
 /* Chevron Color Change (Blue for White Background) */
@@ -644,7 +644,7 @@ body {
 /* Minimal progress bar (ONLY VISIBLE WHEN COLLAPSED) */
 .progress-bar-minimal {
     margin: 0 20px;
-    flex-basis: 300px;
+    flex-basis: auto;
     display: none; /* Hidden by default (expanded state) */
 }
 
