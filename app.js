@@ -69,13 +69,6 @@ function processScriptureData(rawData) {
             });
         }
     });
-    
-    // Debug log to see what's being categorized
-    console.log('Scripture categorization:');
-    Object.entries(organized).forEach(([key, value]) => {
-        console.log(`${key}: ${value.length} scriptures`);
-    });
-    
     return organized;
 }
 
@@ -91,14 +84,8 @@ function initApp() {
     auth.onAuthStateChanged(async (user) => {
         currentUser = user;
         
-        if (user) {
-            console.log('User signed in:', user.email);
-        } else {
-            console.log('User signed out or anonymous');
-        }
-        
         // Update UI and load data
-        updateUserInfo(user);
+        updateUserInfo();
         await loadUserData();
         renderScriptures();
         updateStats();
@@ -211,7 +198,6 @@ async function restartChallenge() {
                 readScriptures: [],
                 lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
             });
-            console.log('Cleared Firestore data for user:', currentUser.uid);
         } catch (error) {
             console.error('Error clearing Firestore data:', error);
         }
@@ -362,7 +348,6 @@ async function loadUserData() {
             if (userDoc.exists) {
                 const data = userDoc.data();
                 readScriptures = new Set(data.readScriptures || []);
-                console.log('Loaded from Firestore:', readScriptures.size, 'scriptures');
             } else {
                 // First time user - create document
                 await db.collection('users').doc(currentUser.uid).set({
@@ -372,7 +357,6 @@ async function loadUserData() {
                     lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
                 });
                 readScriptures = new Set();
-                console.log('Created new Firestore document for user');
             }
         } catch (error) {
             console.error('Error loading from Firestore:', error);
@@ -404,7 +388,6 @@ async function saveUserData() {
                 readScriptures: Array.from(readScriptures),
                 lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
             });
-            console.log('Saved to Firestore:', readScriptures.size, 'scriptures');
             // Also save to localStorage as backup
             saveToLocalStorage();
         } catch (error) {
@@ -593,12 +576,6 @@ function toggleScriptureRead(scriptureId) {
     // Save immediately after toggle
     saveUserData();
     
-    // Log to verify localStorage is working
-    console.log('Scripture toggled:', scriptureId);
-    console.log('Total read:', readScriptures.size);
-    console.log('localStorage key:', currentUser ? `scriptures_${currentUser.uid}` : 'scriptures_anonymous');
-    console.log('Saved data:', localStorage.getItem(currentUser ? `scriptures_${currentUser.uid}` : 'scriptures_anonymous'));
-    
     // Update just the specific card instead of re-rendering everything
     const allCards = document.querySelectorAll('.scripture-card');
     allCards.forEach(card => {
@@ -676,7 +653,6 @@ function openScriptureOnWebsite(scripture, bookSection) {
         url = `https://www.churchofjesuschrist.org/study/scriptures/pgp/${urlBook}/${chapter}?lang=eng&id=p${verse}#p${verse}`;
     }
     
-    console.log('Opening URL:', url); // Debug log
     window.open(url, '_blank');
     showToast("Opening scripture on Church website...");
 }
