@@ -1,10 +1,11 @@
 const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_AUTH_DOMAIN",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_STORAGE_BUCKET",
-    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-    appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyA-2A9XpV8svuy_dtAV6pdyO6K3CUzhDmM",
+  authDomain: "scripture-challenge-2017.firebaseapp.com",
+  projectId: "scripture-challenge-2017",
+  storageBucket: "scripture-challenge-2017.firebasestorage.app",
+  messagingSenderId: "417205749142",
+  appId: "1:417205749142:web:5d9d53b8fb2a65358049b7",
+  measurementId: "G-5FDRMEFN51"
 };
 
 // Initialize Firebase
