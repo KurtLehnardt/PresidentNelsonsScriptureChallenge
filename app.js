@@ -775,5 +775,14 @@ function showToast(message, duration = 2000) {
     }, duration);
 }
 
+document.addEventListener('DOMContentLoaded', () => {   
+    if (typeof APP_VERSION !== 'undefined') {
+        const footer = document.getElementById('version');
+        if (footer) {
+            footer.textContent = `Version ${APP_VERSION}`;
+        }
+    }
+});
+
 // Initialize the app on load
 window.addEventListener('DOMContentLoaded', initApp);
