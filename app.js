@@ -261,9 +261,11 @@ async function handleLogin(provider) {
         // You can add other providers later following similar pattern
         if (provider === 'google') {
             authProvider = new firebase.auth.GoogleAuthProvider();
-        } else if (provider === 'facebook') {
-            authProvider = new firebase.auth.FacebookAuthProvider();
         }
+        // FACEBOOK IS PENDING VERIFICATION OF BUSINESS ENTITY
+        // else if (provider === 'facebook') {
+        //     authProvider = new firebase.auth.FacebookAuthProvider();
+        // }
         // else if (provider === 'apple') {
         //     authProvider = new firebase.auth.OAuthProvider('apple.com');
         // }
