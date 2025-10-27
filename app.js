@@ -253,7 +253,6 @@ function closeAuthModal() {
     document.getElementById('authModal').classList.remove('show');
 }
 
-// Handle OAuth login with Google
 async function handleLogin(provider) {
     try {
         let authProvider;
@@ -262,15 +261,23 @@ async function handleLogin(provider) {
         // You can add other providers later following similar pattern
         if (provider === 'google') {
             authProvider = new firebase.auth.GoogleAuthProvider();
+        } else if (provider === 'facebook') {
+            authProvider = new firebase.auth.FacebookAuthProvider();
+        }
+        // else if (provider === 'apple') {
+        //     authProvider = new firebase.auth.OAuthProvider('apple.com');
+        // }
+        else if (provider === 'github') {
+            authProvider = new firebase.auth.GithubAuthProvider();
         } else {
             // For other providers, show a message
-            showToast(`${provider.charAt(0).toUpperCase() + provider.slice(1)} login coming soon! Please use Google for now.`);
+            showToast(`${provider.charAt(0).toUpperCase() + provider.slice(1)} login coming soon! Please use another provider.`);
             return;
         }
         
         // Sign in with popup
-        const result = await auth.signInWithPopup(authProvider);
-        
+        await auth.signInWithPopup(authProvider);
+
         // User is signed in - auth state listener will handle the rest
         closeAuthModal();
         showToast(`Successfully signed in with ${provider.charAt(0).toUpperCase() + provider.slice(1)}!`);
@@ -309,25 +316,26 @@ async function handleLogout() {
 // Update user info display
 function updateUserInfo() {
     const userInfo = document.getElementById('userInfo');
+    userInfo.classList.add('hidden');
     
     if (currentUser) {
-        // Get first letter of display name or email
         const initial = (currentUser.displayName || currentUser.email || 'U').charAt(0).toUpperCase();
         const displayName = currentUser.displayName || currentUser.email.split('@')[0];
-        
-        userInfo.innerHTML = `
-            <div class="user-avatar">${initial}</div>
-            <span style="color: white; font-weight: 500;">${displayName}</span>
-            <button class="logout-btn" onclick="handleLogout()">Sign Out</button>
-        `;
+        const avatarDiv = userInfo.querySelector('.user-avatar');
+        avatarDiv.textContent = initial;
+        avatarDiv.classList.remove('hidden');
+        const nameSpan = userInfo.querySelector('.user-name');
+        nameSpan.textContent = displayName;
+        nameSpan.classList.remove('hidden');
+        userInfo.querySelector('.login-btn').classList.add('hidden');
+        document.querySelector('.logout-btn').classList.remove('hidden');
     } else {
-        userInfo.innerHTML = `
-            <button class="login-btn" onclick="showAuthModal()">Sign In</button>
-        `;
+        userInfo.querySelector('.login-btn').classList.remove('hidden');
+        userInfo.querySelector('.user-avatar').classList.add('hidden');
+        userInfo.querySelector('.user-name').classList.add('hidden');
+        document.querySelector('.logout-btn').classList.add('hidden');
     }
-    
-    // Show the user info section
-    userInfo.style.display = 'flex';
+    userInfo.classList.remove('hidden');
 }
 
 // Load user data with fallback to localStorage
