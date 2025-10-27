@@ -321,10 +321,18 @@ function updateUserInfo() {
     userInfo.classList.add('hidden');
     
     if (currentUser) {
-        const initial = (currentUser.displayName || currentUser.email || 'U').charAt(0).toUpperCase();
-        const displayName = currentUser.displayName || currentUser.email.split('@')[0];
-        const avatarDiv = userInfo.querySelector('.user-avatar');
-        avatarDiv.textContent = initial;
+        // pass the user avatar or icon from the OAuth provider if available
+        let photoURL = currentUser.photoURL;
+        if (photoURL) {
+            const userAvatar = document.querySelector('.user-avatar');
+            userAvatar.style.backgroundImage = `url(${photoURL})`;
+            userAvatar.style.backgroundSize = 'cover';
+            userAvatar.textContent = '';
+        } else {
+            const initial = (currentUser.displayName || currentUser.email || 'U').charAt(0).toUpperCase();
+            const userAvatar = document.querySelector('.user-avatar');
+            userAvatar.textContent = initial;
+        }
         avatarDiv.classList.remove('hidden');
         const nameSpan = userInfo.querySelector('.user-name');
         nameSpan.textContent = displayName;
