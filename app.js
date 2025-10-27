@@ -160,7 +160,7 @@ function showWelcomeGuide() {
                     </div>
                 </div>
                 <div class="guide-item">
-                    <span class="guide-icon"
+                    <span class="guide-icon">
                         <i class="fa-solid fa-repeat"></i>
                     </span>
                     <div class="guide-text">
