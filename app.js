@@ -98,7 +98,7 @@ function initApp() {
         }
         
         // Update UI and load data
-        updateUserInfo();
+        updateUserInfo(user);
         await loadUserData();
         renderScriptures();
         updateStats();
@@ -292,6 +292,8 @@ async function handleLogin(provider) {
             showToast('Sign in cancelled');
         } else if (error.code === 'auth/network-request-failed') {
             showToast('Network error. Please check your connection.');
+        } else if (error.code === 'auth/account-exists-with-different-credential') {
+            showToast('An account already exists with the same email address but different sign-in credentials. Try using your other sign-in method for this email.', 5000);
         } else {
             showToast('Sign in failed. Please try again.');
         }
@@ -319,30 +321,33 @@ async function handleLogout() {
 function updateUserInfo() {
     const userInfo = document.getElementById('userInfo');
     userInfo.classList.add('hidden');
-    
+    let userAvatar = document.querySelector('.user-avatar');
+    let nameSpan = userInfo.querySelector('.user-name');
+
     if (currentUser) {
         // pass the user avatar or icon from the OAuth provider if available
-        let photoURL = currentUser.photoURL;
+        let photoURL = currentUser ? currentUser.photoURL : null;
+
         if (photoURL) {
-            const userAvatar = document.querySelector('.user-avatar');
             userAvatar.style.backgroundImage = `url(${photoURL})`;
             userAvatar.style.backgroundSize = 'cover';
-            userAvatar.textContent = '';
-        } else {
+            userAvatar.textContent = "";   
+        }
+
+        // if user photo or icon is not available, fallback to initial
+        else {
             const initial = (currentUser.displayName || currentUser.email || 'U').charAt(0).toUpperCase();
-            const userAvatar = document.querySelector('.user-avatar');
             userAvatar.textContent = initial;
         }
-        avatarDiv.classList.remove('hidden');
-        const nameSpan = userInfo.querySelector('.user-name');
-        nameSpan.textContent = displayName;
+        userAvatar.classList.remove('hidden');
+        nameSpan.textContent = currentUser.displayName;
         nameSpan.classList.remove('hidden');
         userInfo.querySelector('.login-btn').classList.add('hidden');
         document.querySelector('.logout-btn').classList.remove('hidden');
     } else {
+        userAvatar.classList.add('hidden');
+        nameSpan.classList.add('hidden');
         userInfo.querySelector('.login-btn').classList.remove('hidden');
-        userInfo.querySelector('.user-avatar').classList.add('hidden');
-        userInfo.querySelector('.user-name').classList.add('hidden');
         document.querySelector('.logout-btn').classList.add('hidden');
     }
     userInfo.classList.remove('hidden');
@@ -758,7 +763,7 @@ function updateStats() {
 }
 
 // Show toast notification
-function showToast(message) {
+function showToast(message, duration = 2000) {
     const toast = document.getElementById('toast');
     const toastMessage = document.getElementById('toastMessage');
     
@@ -767,7 +772,7 @@ function showToast(message) {
     
     setTimeout(() => {
         toast.classList.remove('show');
-    }, 2000);
+    }, duration);
 }
 
 // Initialize the app on load
