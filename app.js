@@ -87,16 +87,29 @@ let readScriptures = new Set();
 
 // Initialize app
 function initApp() {
+    // Set up Firebase auth state listener
+    auth.onAuthStateChanged(async (user) => {
+        currentUser = user;
+        
+        if (user) {
+            console.log('User signed in:', user.email);
+        } else {
+            console.log('User signed out or anonymous');
+        }
+        
+        // Update UI and load data
+        updateUserInfo();
+        await loadUserData();
+        renderScriptures();
+        updateStats();
+    });
+    
     // Check if user has seen the welcome guide
     const hasSeenGuide = localStorage.getItem('hasSeenWelcomeGuide');
     
     if (!hasSeenGuide) {
         showWelcomeGuide();
     }
-    
-    loadUserData();
-    renderScriptures();
-    updateStats();
 
     const statsContent = document.getElementById('statsContent');
     if (statsContent) {
@@ -116,32 +129,40 @@ function initApp() {
 // Show welcome guide
 function showWelcomeGuide() {
     Swal.fire({
-        title: 'Welcome to President Nelson\'s Scripture Challenge! 📖',
+        title: 'Welcome to President Nelson\'s Scripture Challenge!',
         html: `
             <div class="guide-list">
-                <div class="guide-item" style="display: none;">
-                    <span class="guide-icon">💾</span>
+                <div class="guide-item">
+                    <span class="guide-icon">
+                        <i class="fas fa-save"></i>
+                    </span>
                     <div class="guide-text">
                         <strong>Save Your Progress:</strong><br>
                         Stay logged out to save progress only on this device, or sign in to sync across multiple devices.
                     </div>
                 </div>
                 <div class="guide-item">
-                    <span class="guide-icon">✅</span>
+                    <span class="guide-icon">
+                        <i class="fa-solid fa-book"></i>
+                    </span>
                     <div class="guide-text">
                         <strong>Track Your Reading:</strong><br>
                         Tap any scripture to mark it as read.
                     </div>
                 </div>
                 <div class="guide-item">
-                    <span class="guide-icon">🔗</span>
+                    <span class="guide-icon">
+                        <i class="fa-solid fa-link"></i>
+                    </span>
                     <div class="guide-text">
                         <strong>Read on Church Website:</strong><br>
                         Double tap/click any scripture to open it in the Gospel Library or on the Church's website.
                     </div>
                 </div>
                 <div class="guide-item">
-                    <span class="guide-icon">🔄</span>
+                    <span class="guide-icon"
+                        <i class="fa-solid fa-repeat"></i>
+                    </span>
                     <div class="guide-text">
                         <strong>Start Fresh:</strong><br>
                         Restart button is at the bottom.
@@ -179,26 +200,26 @@ function confirmRestart() {
 }
 
 // Restart challenge
-function restartChallenge() {
+async function restartChallenge() {
     // Clear the read scriptures
     readScriptures.clear();
     
     if (currentUser) {
-        // Mock Firebase clear
+        // Clear Firebase data for logged-in user
         try {
-            // This would be your Firebase call
-            // firebase.firestore().collection('users').doc(currentUser.id).update({
-            //     readScriptures: []
-            // });
-            console.log('Clearing Firebase data for user:', currentUser.id);
+            await db.collection('users').doc(currentUser.uid).update({
+                readScriptures: [],
+                lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            console.log('Cleared Firestore data for user:', currentUser.uid);
         } catch (error) {
-            console.log('Firebase unavailable, clearing local storage only');
+            console.error('Error clearing Firestore data:', error);
         }
         
         // Clear local storage for logged-in user
-        localStorage.removeItem(`scriptures_${currentUser.id}`);
-        localStorage.removeItem(`streak_${currentUser.id}`);
-        localStorage.removeItem(`lastRead_${currentUser.id}`);
+        localStorage.removeItem(`scriptures_${currentUser.uid}`);
+        localStorage.removeItem(`streak_${currentUser.uid}`);
+        localStorage.removeItem(`lastRead_${currentUser.uid}`);
     } else {
         // Clear anonymous user data
         localStorage.removeItem('scriptures_anonymous');
@@ -232,37 +253,57 @@ function closeAuthModal() {
     document.getElementById('authModal').classList.remove('show');
 }
 
-// Mock OAuth login
-function handleLogin(provider) {
-    // Simulate OAuth login with different providers
-    const providers = {
-        google: { name: "Google User", icon: "G" },
-        facebook: { name: "Facebook User", icon: "F" },
-        apple: { name: "Apple User", icon: "A" },
-        github: { name: "GitHub User", icon: "H" }
-    };
-    
-    currentUser = {
-        name: providers[provider].name,
-        email: `user@${provider}.com`,
-        id: `${provider}_user123`,
-        provider: provider,
-        icon: providers[provider].icon
-    };
-    
-    closeAuthModal();
-    updateUserInfo();
-    loadUserData();
-    showToast(`Successfully signed in with ${provider.charAt(0).toUpperCase() + provider.slice(1)}!`);
+// Handle OAuth login with Google
+async function handleLogin(provider) {
+    try {
+        let authProvider;
+        
+        // For now, we'll only implement Google OAuth since it's most commonly used
+        // You can add other providers later following similar pattern
+        if (provider === 'google') {
+            authProvider = new firebase.auth.GoogleAuthProvider();
+        } else {
+            // For other providers, show a message
+            showToast(`${provider.charAt(0).toUpperCase() + provider.slice(1)} login coming soon! Please use Google for now.`);
+            return;
+        }
+        
+        // Sign in with popup
+        const result = await auth.signInWithPopup(authProvider);
+        
+        // User is signed in - auth state listener will handle the rest
+        closeAuthModal();
+        showToast(`Successfully signed in with ${provider.charAt(0).toUpperCase() + provider.slice(1)}!`);
+        
+    } catch (error) {
+        console.error('Login error:', error);
+        
+        // Handle specific error codes
+        if (error.code === 'auth/popup-closed-by-user') {
+            showToast('Sign in cancelled');
+        } else if (error.code === 'auth/network-request-failed') {
+            showToast('Network error. Please check your connection.');
+        } else {
+            showToast('Sign in failed. Please try again.');
+        }
+    }
 }
 
 // Handle logout
-function handleLogout() {
-    // Save data before logout
-    saveUserData();
-    currentUser = null;
-    updateUserInfo();
-    showToast("Successfully signed out!");
+async function handleLogout() {
+    try {
+        // Save data before logout
+        await saveUserData();
+        
+        // Sign out from Firebase
+        await auth.signOut();
+        
+        // currentUser will be set to null by auth state listener
+        showToast("Successfully signed out!");
+    } catch (error) {
+        console.error('Logout error:', error);
+        showToast("Error signing out. Please try again.");
+    }
 }
 
 // Update user info display
@@ -270,9 +311,13 @@ function updateUserInfo() {
     const userInfo = document.getElementById('userInfo');
     
     if (currentUser) {
+        // Get first letter of display name or email
+        const initial = (currentUser.displayName || currentUser.email || 'U').charAt(0).toUpperCase();
+        const displayName = currentUser.displayName || currentUser.email.split('@')[0];
+        
         userInfo.innerHTML = `
-            <div class="user-avatar">${currentUser.icon || currentUser.name.charAt(0)}</div>
-            <span style="color: white; font-weight: 500;">${currentUser.name}</span>
+            <div class="user-avatar">${initial}</div>
+            <span style="color: white; font-weight: 500;">${displayName}</span>
             <button class="logout-btn" onclick="handleLogout()">Sign Out</button>
         `;
     } else {
@@ -280,19 +325,39 @@ function updateUserInfo() {
             <button class="login-btn" onclick="showAuthModal()">Sign In</button>
         `;
     }
+    
+    // Show the user info section
+    userInfo.style.display = 'flex';
 }
 
 // Load user data with fallback to localStorage
-function loadUserData() {
-    // Try to load from Firebase first (mock)
-    try {
-        // This would be your Firebase call
-        // firebase.firestore().collection('users').doc(userId).get()...
-        
-        // Fallback to localStorage
-        loadFromLocalStorage();
-    } catch (error) {
-        console.log('Firebase unavailable, using local storage');
+async function loadUserData() {
+    if (currentUser) {
+        // Load from Firestore for logged-in users
+        try {
+            const userDoc = await db.collection('users').doc(currentUser.uid).get();
+            if (userDoc.exists) {
+                const data = userDoc.data();
+                readScriptures = new Set(data.readScriptures || []);
+                console.log('Loaded from Firestore:', readScriptures.size, 'scriptures');
+            } else {
+                // First time user - create document
+                await db.collection('users').doc(currentUser.uid).set({
+                    email: currentUser.email,
+                    displayName: currentUser.displayName,
+                    readScriptures: [],
+                    lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                readScriptures = new Set();
+                console.log('Created new Firestore document for user');
+            }
+        } catch (error) {
+            console.error('Error loading from Firestore:', error);
+            // Fallback to localStorage if Firestore fails
+            loadFromLocalStorage();
+        }
+    } else {
+        // Load from localStorage for anonymous users
         loadFromLocalStorage();
     }
 }
@@ -300,7 +365,7 @@ function loadUserData() {
 // Load from localStorage
 function loadFromLocalStorage() {
     // Load for current user or anonymous
-    const storageKey = currentUser ? `scriptures_${currentUser.id}` : 'scriptures_anonymous';
+    const storageKey = currentUser ? `scriptures_${currentUser.uid}` : 'scriptures_anonymous';
     const savedData = localStorage.getItem(storageKey);
     if (savedData) {
         readScriptures = new Set(JSON.parse(savedData));
@@ -308,22 +373,31 @@ function loadFromLocalStorage() {
 }
 
 // Save user data with fallback to localStorage
-function saveUserData() {
-    try {
-        // This would be your Firebase call
-        // firebase.firestore().collection('users').doc(userId).set()...
-        
-        // Also save to localStorage as backup
-        saveToLocalStorage();
-    } catch (error) {
-        console.log('Firebase unavailable, saving to local storage');
+async function saveUserData() {
+    if (currentUser) {
+        // Save to Firestore for logged-in users
+        try {
+            await db.collection('users').doc(currentUser.uid).update({
+                readScriptures: Array.from(readScriptures),
+                lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            console.log('Saved to Firestore:', readScriptures.size, 'scriptures');
+            // Also save to localStorage as backup
+            saveToLocalStorage();
+        } catch (error) {
+            console.error('Error saving to Firestore:', error);
+            // Fallback to localStorage if Firestore fails
+            saveToLocalStorage();
+        }
+    } else {
+        // Save to localStorage for anonymous users
         saveToLocalStorage();
     }
 }
 
 // Save to localStorage
 function saveToLocalStorage() {
-    const storageKey = currentUser ? `scriptures_${currentUser.id}` : 'scriptures_anonymous';
+    const storageKey = currentUser ? `scriptures_${currentUser.uid}` : 'scriptures_anonymous';
     localStorage.setItem(storageKey, JSON.stringify(Array.from(readScriptures)));
 }
 
@@ -499,8 +573,8 @@ function toggleScriptureRead(scriptureId) {
     // Log to verify localStorage is working
     console.log('Scripture toggled:', scriptureId);
     console.log('Total read:', readScriptures.size);
-    console.log('localStorage key:', currentUser ? `scriptures_${currentUser.id}` : 'scriptures_anonymous');
-    console.log('Saved data:', localStorage.getItem(currentUser ? `scriptures_${currentUser.id}` : 'scriptures_anonymous'));
+    console.log('localStorage key:', currentUser ? `scriptures_${currentUser.uid}` : 'scriptures_anonymous');
+    console.log('Saved data:', localStorage.getItem(currentUser ? `scriptures_${currentUser.uid}` : 'scriptures_anonymous'));
     
     // Update just the specific card instead of re-rendering everything
     const allCards = document.querySelectorAll('.scripture-card');
@@ -640,8 +714,8 @@ function updateStats() {
     document.getElementById('progressFillMinimal').textContent = percentage + '%';
     
     // Calculate streak (mock implementation)
-    const storageKey = currentUser ? `lastRead_${currentUser.id}` : 'lastRead_anonymous';
-    const streakKey = currentUser ? `streak_${currentUser.id}` : 'streak_anonymous';
+    const storageKey = currentUser ? `lastRead_${currentUser.uid}` : 'lastRead_anonymous';
+    const streakKey = currentUser ? `streak_${currentUser.uid}` : 'streak_anonymous';
     
     const lastRead = localStorage.getItem(storageKey);
     const today = new Date().toDateString();
