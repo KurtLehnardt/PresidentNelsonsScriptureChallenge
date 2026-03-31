@@ -71,6 +71,7 @@ const scriptureData = processScriptureData(rawScriptureData);
 
 let currentUser = null;
 let readScriptures = new Set();
+let userSettings = { autoCollapse: false, autoScroll: true };
 
 function initApp() {
     auth.onAuthStateChanged(async (user) => {
@@ -97,6 +98,10 @@ function initApp() {
         const modal = document.getElementById('authModal');
         if (event.target === modal) {
             closeAuthModal();
+        }
+        const settingsModal = document.getElementById('settingsModal');
+        if (event.target === settingsModal) {
+            closeSettingsModal();
         }
     }
 }
@@ -140,6 +145,15 @@ function showWelcomeGuide() {
                     <div class="guide-text">
                         <strong>Start Fresh:</strong><br>
                         Restart button is at the bottom.
+                    </div>
+                </div>
+                <div class="guide-item">
+                    <span class="guide-icon">
+                        <i class="fas fa-gear"></i>
+                    </span>
+                    <div class="guide-text">
+                        <strong>Settings:</strong><br>
+                        Tap the gear icon to customize your experience — auto-collapse read scriptures or auto-scroll to where you left off.
                     </div>
                 </div>
             </div>
@@ -308,11 +322,13 @@ async function loadUserData() {
             if (userDoc.exists) {
                 const data = userDoc.data();
                 readScriptures = new Set(data.readScriptures || []);
+                userSettings = data.settings || { autoCollapse: false, autoScroll: true };
             } else {
                 await db.collection('users').doc(currentUser.uid).set({
                     email: currentUser.email,
                     displayName: currentUser.displayName,
                     readScriptures: [],
+                    settings: { autoCollapse: false, autoScroll: true },
                     lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
                 });
                 readScriptures = new Set();
@@ -332,6 +348,9 @@ function loadFromLocalStorage() {
     if (savedData) {
         readScriptures = new Set(JSON.parse(savedData));
     }
+    const settingsKey = currentUser ? `settings_${currentUser.uid}` : 'settings_anonymous';
+    const savedSettings = localStorage.getItem(settingsKey);
+    if (savedSettings) userSettings = JSON.parse(savedSettings);
 }
 
 async function saveUserData() {
@@ -339,6 +358,7 @@ async function saveUserData() {
         try {
             await db.collection('users').doc(currentUser.uid).update({
                 readScriptures: Array.from(readScriptures),
+                settings: userSettings,
                 lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
             });
             saveToLocalStorage();
@@ -355,6 +375,8 @@ async function saveUserData() {
 function saveToLocalStorage() {
     const storageKey = currentUser ? `scriptures_${currentUser.uid}` : 'scriptures_anonymous';
     localStorage.setItem(storageKey, JSON.stringify(Array.from(readScriptures)));
+    const settingsKey = currentUser ? `settings_${currentUser.uid}` : 'settings_anonymous';
+    localStorage.setItem(settingsKey, JSON.stringify(userSettings));
 }
 
 function renderScriptures() {
@@ -408,36 +430,6 @@ function createBookSection(bookName, scriptures) {
     return section;
 }
 
-// 🔽 NEW/UPDATED: Toggle book expansion and minimize all others
-function toggleBook(section) {
-    const isExpanding = !section.classList.contains('expanded');
-
-    // 1. Collapse ALL sections first
-    document.querySelectorAll('.book-section').forEach(s => {
-        s.classList.remove('expanded');
-        s.querySelector('.scriptures-container').style.maxHeight = '0';
-    });
-
-    // 2. Collapse the Stats section
-    const statsSection = document.getElementById('statsSection');
-    const statsContent = document.getElementById('statsContent');
-    const statsIcon = document.getElementById('statsExpandIcon');
-    
-    if (!statsSection.classList.contains('collapsed')) {
-        statsSection.classList.add('collapsed');
-        statsContent.style.maxHeight = '0';
-        statsIcon.textContent = '▶';
-    }
-
-    // 3. If a book was clicked, expand it (after everything else is collapsed)
-    if (isExpanding) {
-        section.classList.add('expanded');
-        const container = section.querySelector('.scriptures-container');
-        // Set max-height for smooth transition
-        container.style.maxHeight = container.scrollHeight + 'px'; 
-    }
-}
-
 // 🔽 UPDATED: Toggle stats function (must now keep track of max-height)
 function toggleStats() {
     const statsSection = document.getElementById('statsSection');
@@ -473,12 +465,14 @@ function toggleStats() {
 // Create a scripture card
 function createScriptureCard(scripture, bookSection) {
     const card = document.createElement('div');
-    card.className = `scripture-card ${readScriptures.has(scripture.id) ? 'read' : 'unread'}`;
-    
+    const isRead = readScriptures.has(scripture.id);
+    const collapsedClass = (userSettings.autoCollapse && isRead) ? ' collapsed' : '';
+    card.className = `scripture-card ${isRead ? 'read' : 'unread'}${collapsedClass}`;
+
     card.innerHTML = `
         <div class="scripture-reference">
             <span>${scripture.reference}</span>
-            ${readScriptures.has(scripture.id) ? '<div class="check-mark">✓</div>' : ''}
+            ${isRead ? '<div class="check-mark">✓</div>' : ''}
         </div>
         <div class="scripture-text">${scripture.text}</div>
     `;
@@ -543,6 +537,11 @@ function toggleScriptureRead(scriptureId) {
                 card.classList.add('unread');
                 const checkMark = card.querySelector('.check-mark');
                 if (checkMark) checkMark.remove();
+            }
+            if (userSettings.autoCollapse && readScriptures.has(scriptureId)) {
+                card.classList.add('collapsed');
+            } else {
+                card.classList.remove('collapsed');
             }
         }
     });
@@ -634,14 +633,47 @@ function toggleBook(section) {
         statsIcon.classList.add('fa-chevron-right');
     }
 
-    // 3. If a book was originally clicked, expand it 
+    // 3. If a book was originally clicked, expand it
     if (isExpanding) {
         section.classList.add('expanded');
         const container = section.querySelector('.scriptures-container');
-        container.style.maxHeight = container.scrollHeight + 'px'; 
+        container.style.maxHeight = container.scrollHeight + 'px';
         // Set THIS book icon to down
-        icon.classList.remove('fa-chevron-right'); 
-        icon.classList.add('fa-chevron-down'); 
+        icon.classList.remove('fa-chevron-right');
+        icon.classList.add('fa-chevron-down');
+
+        // Auto-scroll to last read scripture if 100+ read in this section
+        if (userSettings.autoScroll) {
+            const sectionName = section.id.replace(/-/g, ' ');
+            // Find matching category - need to handle "Doctrine and Covenants" etc
+            let categoryKey = Object.keys(scriptureData).find(k => k.replace(/\s+/g, '-') === section.id);
+            if (categoryKey) {
+                const sectionScriptures = scriptureData[categoryKey];
+                const readInSection = sectionScriptures.filter(s => readScriptures.has(s.id));
+
+                if (readInSection.length >= 100) {
+                    // Find the last read scripture in order
+                    let lastReadIndex = -1;
+                    for (let i = sectionScriptures.length - 1; i >= 0; i--) {
+                        if (readScriptures.has(sectionScriptures[i].id)) {
+                            lastReadIndex = i;
+                            break;
+                        }
+                    }
+
+                    if (lastReadIndex >= 0) {
+                        // Small delay to let the expansion animation start
+                        setTimeout(() => {
+                            const cards = container.querySelectorAll('.scripture-card');
+                            if (cards[lastReadIndex]) {
+                                // Scroll to the last read card, with the header staying visible (sticky CSS handles this)
+                                cards[lastReadIndex].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            }
+                        }, 100);
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -699,6 +731,29 @@ function showToast(message, duration = 2000) {
     setTimeout(() => {
         toast.classList.remove('show');
     }, duration);
+}
+
+function showSettingsModal() {
+    document.getElementById('settingsModal').classList.add('show');
+    // Sync toggle states with current settings
+    document.getElementById('autoCollapseToggle').checked = userSettings.autoCollapse;
+    document.getElementById('autoScrollToggle').checked = userSettings.autoScroll;
+}
+
+function closeSettingsModal() {
+    document.getElementById('settingsModal').classList.remove('show');
+}
+
+function toggleAutoCollapse() {
+    userSettings.autoCollapse = document.getElementById('autoCollapseToggle').checked;
+    saveUserData();
+    // Re-render to apply collapse state
+    renderScriptures();
+}
+
+function toggleAutoScroll() {
+    userSettings.autoScroll = document.getElementById('autoScrollToggle').checked;
+    saveUserData();
 }
 
 document.addEventListener('DOMContentLoaded', () => {   
