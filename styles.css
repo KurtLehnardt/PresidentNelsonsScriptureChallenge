@@ -295,7 +295,7 @@ body {
     background: white;
     border-radius: 20px;
     margin-bottom: 20px;
-    overflow: hidden;
+    overflow: clip;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
     transition: transform 0.3s;
 }
@@ -797,7 +797,7 @@ body {
 /* ======================================= */
 /* STICKY BOOK HEADER                      */
 /* ======================================= */
-.book-section.expanded .book-header {
+.book-header {
     position: sticky;
     top: 0;
     z-index: 10;
